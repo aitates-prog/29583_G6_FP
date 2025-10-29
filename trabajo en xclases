@@ -1,0 +1,15 @@
+Algoritmo estaciones 
+	//inicio
+	Definir estacion_de__argentina Como entero
+	//desarrollo
+	leer estacion_de__argentina
+	Segun estacion_de__argentina hacer 
+			1:escribir "estacion primavera";
+			2:escribir "estacion otoño";
+			3:escribir "estacion otoño";
+			4:escribir "estacion invierno";
+			De Otro Modo:
+				escribir "Error no corresponde a la opcion del 1-4"
+	FinSegun
+	
+FinAlgoritmo
