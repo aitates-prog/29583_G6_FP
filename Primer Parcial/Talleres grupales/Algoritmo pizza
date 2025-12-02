@@ -19,3 +19,4 @@ Algoritmo pizza
 	Imprimir "cada comenzal recibe:", A, "porciones"
 	Imprimir "area por comensal:", X, "cm2"
 FinAlgoritmo
+
