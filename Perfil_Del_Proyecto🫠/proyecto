@@ -1,0 +1,203 @@
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_PROD 100
+#define NOMBRE_LEN 30
+#define STOCK_BAJO 5
+
+typedef struct {
+    char nombre[NOMBRE_LEN];
+    int cantidad;
+    float precioCompra;
+    float precioVenta;
+} Producto;
+
+Producto inv[MAX_PROD];
+int totalProd = 0;
+
+float totalGastos = 0.0f;  // inversión en compras
+float totalVentas = 0.0f;  // dinero obtenido por ventas
+
+// --- Funciones ---
+void limpiarBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF) { }
+}
+
+void agregarProducto() {
+    if (totalProd >= MAX_PROD) {
+        printf("\nInventario lleno.\n");
+        return;
+    }
+
+    Producto p;
+    printf("\n=== AGREGAR PRODUCTO ===\n");
+    printf("Nombre (sin espacios): ");
+    if (scanf("%29s", p.nombre) != 1) {
+        printf("Entrada inválida.\n");
+        limpiarBuffer();
+        return;
+    }
+
+    printf("Cantidad: ");
+    if (scanf("%d", &p.cantidad) != 1 || p.cantidad < 0) {
+        printf("Cantidad inválida.\n");
+        limpiarBuffer();
+        return;
+    }
+
+    printf("Precio de compra (por unidad): ");
+    if (scanf("%f", &p.precioCompra) != 1 || p.precioCompra < 0.0f) {
+        printf("Precio de compra inválido.\n");
+        limpiarBuffer();
+        return;
+    }
+
+    printf("Precio de venta (por unidad): ");
+    if (scanf("%f", &p.precioVenta) != 1 || p.precioVenta < 0.0f) {
+        printf("Precio de venta inválido.\n");
+        limpiarBuffer();
+        return;
+    }
+
+    // Guardar
+    inv[totalProd++] = p;
+    totalGastos += p.precioCompra * p.cantidad;
+
+    printf("\nProducto agregado correctamente.\n");
+    limpiarBuffer();
+}
+
+void mostrarInventario() {
+    printf("\n=== INVENTARIO ===\n");
+    if (totalProd == 0) {
+        printf("No hay productos registrados.\n");
+        return;
+    }
+    for (int i = 0; i < totalProd; i++) {
+        printf("%d) %s  |  Cantidad: %d  |  Compra: %.2f  |  Venta: %.2f\n",
+               i + 1,
+               inv[i].nombre,
+               inv[i].cantidad,
+               inv[i].precioCompra,
+               inv[i].precioVenta);
+    }
+}
+
+void venderProducto() {
+    if (totalProd == 0) {
+        printf("\nNo hay productos para vender.\n");
+        return;
+    }
+
+    mostrarInventario();
+    printf("\nSeleccione el numero del producto a vender: ");
+    int opcion;
+    if (scanf("%d", &opcion) != 1) {
+        printf("Entrada inválida.\n");
+        limpiarBuffer();
+        return;
+    }
+
+    if (opcion < 1 || opcion > totalProd) {
+        printf("Opción fuera de rango.\n");
+        limpiarBuffer();
+        return;
+    }
+
+    int idx = opcion - 1;
+    printf("Cantidad a vender de '%s' (stock actual %d): ",
+           inv[idx].nombre, inv[idx].cantidad);
+    int cant;
+    if (scanf("%d", &cant) != 1 || cant <= 0) {
+        printf("Cantidad inválida.\n");
+        limpiarBuffer();
+        return;
+    }
+
+    if (cant > inv[idx].cantidad) {
+        printf("No hay suficiente stock. Venta cancelada.\n");
+        limpiarBuffer();
+        return;
+    }
+
+    inv[idx].cantidad -= cant;
+    float ingreso = cant * inv[idx].precioVenta;
+    totalVentas += ingreso;
+
+    printf("\nVenta registrada: %d x %s = %.2f\n", cant, inv[idx].nombre, ingreso);
+    limpiarBuffer();
+}
+
+void registrarGastoManual() {
+    printf("\n=== REGISTRAR GASTO EXTRA ===\n");
+    float g;
+    printf("Monto del gasto: ");
+    if (scanf("%f", &g) != 1 || g < 0.0f) {
+        printf("Monto inválido.\n");
+        limpiarBuffer();
+        return;
+    }
+    totalGastos += g;
+    printf("Gasto de %.2f agregado.\n", g);
+    limpiarBuffer();
+}
+
+void mostrarFinanzas() {
+    printf("\n=== RESUMEN FINANCIERO ===\n");
+    printf("Total Gastos (inversión + otros): %.2f\n", totalGastos);
+    printf("Total Ventas: %.2f\n", totalVentas);
+    printf("Ganancia (Ventas - Gastos): %.2f\n", totalVentas - totalGastos);
+}
+
+void productosPorAcabarse() {
+    printf("\n=== PRODUCTOS POR ACABARSE (stock < %d) ===\n", STOCK_BAJO);
+    int encontrados = 0;
+    for (int i = 0; i < totalProd; i++) {
+        if (inv[i].cantidad > 0 && inv[i].cantidad < STOCK_BAJO) {
+            printf("%s - Stock: %d\n", inv[i].nombre, inv[i].cantidad);
+            encontrados = 1;
+        }
+    }
+    if (!encontrados) {
+        printf("Ningún producto con stock bajo.\n");
+    }
+}
+
+void menuPrincipal() {
+    int op = -1;
+    while (op != 0) {
+        printf("\n====== MENU PRINCIPAL ======\n");
+        printf("1) Agregar producto al inventario\n");
+        printf("2) Mostrar inventario\n");
+        printf("3) Registrar venta\n");
+        printf("4) Mostrar ganancias y gastos\n");
+        printf("5) Productos por acabarse\n");
+        printf("6) Registrar gasto manual\n");
+        printf("0) Salir\n");
+        printf("Seleccione una opcion: ");
+
+        if (scanf("%d", &op) != 1) {
+            printf("Entrada inválida. Intente de nuevo.\n");
+            limpiarBuffer();
+            continue;
+        }
+
+        switch (op) {
+            case 1: agregarProducto(); break;
+            case 2: mostrarInventario(); break;
+            case 3: venderProducto(); break;
+            case 4: mostrarFinanzas(); break;
+            case 5: productosPorAcabarse(); break;
+            case 6: registrarGastoManual(); break;
+            case 0: printf("Saliendo...\n"); break;
+            default: printf("Opcion inválida.\n");
+        }
+    }
+}
+
+// --- Programa principal ---
+int main() {
+    menuPrincipal();
+    return 0;
+}
